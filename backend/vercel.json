@@ -2,8 +2,8 @@
   "version": 2,
   "routes": [
     {
-      "src": "/api/(.*)", 
-      "dest": "server.js",
+      "src": "/api/(.*)",
+      "dest": "/src/server.js",
       "headers": {
         "Access-Control-Allow-Origin": "https://veg-bridge-sl-vr3u-kbj5pgi10-kaushicks-projects.vercel.app",
         "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
