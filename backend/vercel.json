@@ -5,7 +5,7 @@
       "src": "/(.*)",
       "dest": "server.js",
       "headers": {
-        "Access-Control-Allow-Origin": "https://veg-bridge-sl-vr3u-1s2s8dc49-kaushicks-projects.vercel.app",
+        "Access-Control-Allow-Origin": "https://veg-bridge-sl-vr3u.vercel.app",
         "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type, Authorization",
         "Access-Control-Allow-Credentials": "true"
