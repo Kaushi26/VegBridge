@@ -14,17 +14,21 @@ const GuideRoutes = require('./routes/guideRoutes');
 // Initialize express app
 const app = express();
 
+// CORS Configuration
 const corsOptions = {
-  origin: 'https://veg-bridge-sl-vr3u-kbj5pgi10-kaushicks-projects.vercel.app', // Allow the specific frontend URL
+  origin: process.env.FRONTEND_URL, // Make sure this matches the frontend URL
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true, // Allow cookies or authorization headers
-  preflightContinue: false, // Ensure preflight requests are handled automatically
-  optionsSuccessStatus: 204, // To avoid 404 errors on preflight request
+  credentials: true, // Allow cookies and authorization headers
+  preflightContinue: false, // Preflight requests should be handled by Express
+  optionsSuccessStatus: 204, // Status for preflight requests
 };
 
+// Use CORS middleware globally
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // This is for handling preflight OPTIONS requests globally
+
+// Handle preflight OPTIONS requests globally
+app.options('*', cors(corsOptions));
 
 
 // Parse JSON request bodies
