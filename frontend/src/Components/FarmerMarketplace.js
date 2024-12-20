@@ -78,7 +78,7 @@ const FarmerMarketplace = () => {
             <div className="col-md-3 col-lg-3 mb-4" key={product._id}>
               <div className="card shadow-sm">
                 <img
-                  src={`${product.image}`}
+                  src={product.image}
                   className="card-img-top"
                   alt={product.name}
                   style={{ height: "200px", objectFit: "cover" }}
@@ -111,7 +111,7 @@ const FarmerMarketplace = () => {
             <div className="col-md-3 col-lg-3 mb-4" key={product._id}>
               <div className="card shadow-sm">
                 <img
-                  src={product.image ? `${apiURL}/${product.image}` : "https://via.placeholder.com/150"}
+                  src={product.image}
                   className="card-img-top"
                   alt={product.name}
                   style={{ height: "200px", objectFit: "cover" }}

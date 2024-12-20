@@ -60,11 +60,27 @@ const FarmerTransactions = () => {
     }
   }, [userDetails, apiURL]); // Trigger when userDetails are available/changed
 
-  if (error) return <div>{error}</div>;
   if (loading) return <div>Loading...</div>;
 
+  // Handle error state
+  if (error) {
+    return (
+      <div className="container mt-5">
+        <br/>
+        <div className="text-center text-muted mt-5">{error}</div>
+      </div>
+    );
+  }
+
+  // Handle empty transactions
   if (transactions.length === 0) {
-    return <div>No transactions available for this farmer.</div>;
+    return (
+      <div className="container mt-5">
+        <br/>
+        <br/>
+        <div className="text-center mt-5 text-muted">No transactions available for this farmer.</div>
+      </div>
+    );
   }
 
   // Group transactions by buyer

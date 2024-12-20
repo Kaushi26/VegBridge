@@ -231,7 +231,7 @@ const AddListing = () => {
         </div>
         {error && <p className="text-danger">{error}</p>}
         <div className="col-12">
-          <button type="submit" className="btn btn-primary" disabled={loading}>
+          <button type="submit" className="btn btn-success" disabled={loading}>
             {loading ? "Uploading..." : "Add Listing"}
           </button>
         </div>

@@ -4,7 +4,7 @@ const Order = require('../models/Order');
 const jwt = require('jsonwebtoken');
 const paypal = require('@paypal/checkout-server-sdk');
 const asyncHandler = require('express-async-handler');
-const nodemailer = require('nodemailer');
+const nodemailer = require('nodemailer');  // Ensure this is at the top of your file
 require('dotenv').config();  
 
 // PayPal environment setup
@@ -56,64 +56,6 @@ router.get('/transactions/:identifier/:role', authenticateToken, asyncHandler(as
   }
 }));
 
-// Route to create PayPal payment
-router.post('/create-payment', authenticateToken, asyncHandler(async (req, res) => {
-  const { total, currency = 'USD', buyerDetails } = req.body;
-
-  if (!total || !buyerDetails) {
-    return res.status(400).json({ message: 'Total amount and buyer details are required' });
-  }
-
-  try {
-    const payment = await createOrder(total, currency, buyerDetails);
-
-    if (payment.approval_url) {
-      res.json({ success: true, approval_url: payment.approval_url });
-    } else {
-      res.status(500).json({ message: 'Error creating PayPal payment' });
-    }
-  } catch (error) {
-    console.error('Error creating PayPal payment:', error.message);
-    res.status(500).json({ message: 'Error creating PayPal payment', error: error.message });
-  }
-}));
-
-const createOrder = async (totalPrice, currency, buyerDetails) => {
-  if (!totalPrice) {
-    throw new Error('Total price is required.');
-  }
-
-  try {
-    const conversionRate = 300; // Dynamic rate for conversion
-    const convertedPrice = (totalPrice / conversionRate).toFixed(2);
-
-    const request = new paypal.orders.OrdersCreateRequest();
-    request.prefer("return=representation");
-    request.requestBody({
-      intent: "CAPTURE",
-      purchase_units: [{
-        amount: {
-          currency_code: currency,
-          value: convertedPrice,
-        },
-        description: "Payment for order",
-        custom_id: buyerDetails.id,
-      }],
-      application_context: {
-        shipping_preference: "NO_SHIPPING",
-        user_action: "PAY_NOW",
-      },
-    });
-
-    const order = await client.execute(request);
-    const approvalUrl = order.result.links.find(link => link.rel === 'approval_url').href;
-    return { approval_url: approvalUrl };
-  } catch (error) {
-    console.error("Error creating PayPal order:", error.message);
-    throw new Error('Error creating PayPal order');
-  }
-};
-
 // Route for handling PayPal payment cancellation
 router.get('/cancel', (req, res) => {
   res.send('Payment cancelled');
@@ -122,8 +64,6 @@ router.get('/cancel', (req, res) => {
 router.post('/payment-success', authenticateToken, async (req, res) => {
   try {
     const orderData = req.body.orderDetails;
-    console.log("Received order data:", orderData);
-
 
     // Validate if paymentDetails is provided
     if (!orderData.paymentDetails) {
@@ -153,6 +93,8 @@ router.post('/payment-success', authenticateToken, async (req, res) => {
   }
 });
 
+
+
 router.post("/send-link", authenticateToken, asyncHandler(async (req, res) => {
   const { orderId, farmerName, farmerEmail } = req.body;
 
@@ -161,11 +103,13 @@ router.post("/send-link", authenticateToken, asyncHandler(async (req, res) => {
   }
 
   try {
+    // Fetch the order and populate related farmer products
     const order = await Order.findById(orderId).populate('farmers.products');
     if (!order) {
       return res.status(404).json({ message: "Order not found." });
     }
 
+    // Calculate total price
     const totalPrice = order.farmers.reduce((sum, farmer) => {
       const farmerTotal = farmer.products.reduce(
         (productSum, product) => productSum + product.price * product.quantity,
@@ -174,18 +118,46 @@ router.post("/send-link", authenticateToken, asyncHandler(async (req, res) => {
       return sum + farmerTotal + order.transportationCost;
     }, 0);
 
-    const paymentToken = jwt.sign({ orderId, totalPrice }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
-    // Assuming you are passing buyerDetails for the PayPal order creation
-    const buyerDetails = { id: orderId, email: farmerEmail };
-    const payment = await createOrder(totalPrice, 'USD', buyerDetails);
+    // Set up the PayPal order creation request
+    const conversionRate = 300; // Example conversion rate for currency conversion, adjust as needed
+    const convertedPrice = (totalPrice / conversionRate).toFixed(2);
 
-    const paymentLink = payment.approval_url; // This should be the PayPal approval URL
+    const request = new paypal.orders.OrdersCreateRequest();
+    request.prefer("return=representation");
+    request.requestBody({
+      intent: "CAPTURE",
+      purchase_units: [{
+        amount: {
+          currency_code: 'USD',  // Change to your desired currency code
+          value: convertedPrice,
+        },
+        description: "Payment for order",
+        custom_id: orderId,  // Associate with the order ID
+      }],
+      application_context: {
+        shipping_preference: "NO_SHIPPING",
+        user_action: "PAY_NOW",
+      },
+    });
 
+    // Execute the PayPal order creation request
+    const payment = await client.execute(request);
+
+    // Check if the approval_url exists
+    const approvalLink = payment.result.links.find(link => link.rel === 'approve');
+    if (!approvalLink) {
+      console.error("Approval URL not found:", payment.result.links);
+      return res.status(500).json({ message: "Approval URL not found in PayPal response." });
+    }
+
+    const paymentLink = approvalLink.href;
+
+    // Send the email with the payment link to the farmer
     const transporter = nodemailer.createTransport({
-      host: 'smtp.office365.com',  // Outlook SMTP server
-      port: 587,                  // Port for TLS
-      secure: false,              // False for non-SSL connection
+      host: 'smtp.office365.com',
+      port: 587,
+      secure: false,
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
@@ -203,6 +175,7 @@ router.post("/send-link", authenticateToken, asyncHandler(async (req, res) => {
     };
 
     await transporter.sendMail(mailOptions);
+
     res.status(200).json({ message: "Payment link sent successfully." });
   } catch (error) {
     console.error("Error sending payment link:", error.message);

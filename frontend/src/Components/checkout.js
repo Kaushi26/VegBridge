@@ -14,6 +14,7 @@ const Checkout = () => {
   const [buyerDetails, setBuyerDetails] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [paymentLoading, setPaymentLoading] = useState(false); // Track PayPal button loading
   const apiURL = process.env.REACT_APP_API_NAME;
 
   useEffect(() => {
@@ -40,7 +41,8 @@ const Checkout = () => {
 
   const groupedItems = useMemo(() => {
     return cartItems.reduce((acc, item) => {
-      (acc[item.farmerId] = acc[item.farmerId] || []).push(item);
+      const email = item.farmerEmail;
+      (acc[email] = acc[email] || []).push(item);
       return acc;
     }, {});
   }, [cartItems]);
@@ -49,43 +51,36 @@ const Checkout = () => {
 
   const handlePaymentSuccess = async (details) => {
     try {
-      console.log("Payment Details:", details); // Debugging all payment details
-  
-      const paymentId = details.paymentId; // Corrected field
-      const paymentStatus = details.paymentStatus; // Corrected field
+      setPaymentLoading(true);
+      console.log("Payment Details:", details);
+
+      const paymentId = details.paymentId;
+      const paymentStatus = details.paymentStatus;
       const paymentAmount = totalInUSD;
-  
-      console.log("Payment ID:", paymentId); // Check if paymentId exists
-      console.log("Payment Status:", paymentStatus); // Verify payment status
-      console.log("Payment Amount (USD):", paymentAmount); // Check calculated amount
-  
+
       if (!buyerDetails) {
-        console.error("Buyer details missing:", buyerDetails);
         setError("Buyer details are missing.");
         return;
       }
-  
+
       if (!cartItems.length) {
-        console.error("Cart items are empty:", cartItems);
         setError("Cart is empty.");
         return;
       }
-  
+
       if (!paymentId) {
-        console.error("Payment ID is missing.");
         setError("Payment ID is missing.");
         return;
       }
-  
-      const farmers = Object.keys(groupedItems).map((farmerId) => ({
+
+      const farmers = Object.keys(groupedItems).map((farmerEmail) => ({
         farmerDetails: {
-          farmerId,
-          farmerName: groupedItems[farmerId][0].farmerName,
-          farmerEmail: groupedItems[farmerId][0].farmerEmail,
-          farmerAddress: groupedItems[farmerId][0].farmerAddress,
-          location: groupedItems[farmerId][0].location,
+          farmerEmail,
+          farmerName: groupedItems[farmerEmail][0].farmerName,
+          farmerAddress: groupedItems[farmerEmail][0].farmerAddress,
+          location: groupedItems[farmerEmail][0].location,
         },
-        products: groupedItems[farmerId].map((item) => ({
+        products: groupedItems[farmerEmail].map((item) => ({
           productId: item.id,
           name: item.name,
           quantity: item.selectedQuantity,
@@ -94,7 +89,7 @@ const Checkout = () => {
           image: item.image,
         })),
       }));
-   
+
       const orderData = {
         buyerDetails,
         farmers,
@@ -110,30 +105,26 @@ const Checkout = () => {
           paymentStatus,
         },
       };
-  
-      console.log("Order Data:", orderData);
-  
-      setLoading(true);
+
       const token = localStorage.getItem("token");
       const response = await axios.post(
         `${apiURL}/api/orders/payment-success`,
         { orderDetails: orderData },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-  
+
       console.log("Order placed successfully:", response.data);
       clearCart();
       navigate("/business-marketplace");
     } catch (err) {
-      console.error("Error placing order:", err.response?.data || err.message);
-      setError(err.response?.data?.message || "Error placing order.");
+      setError("Error placing order.");
     } finally {
-      setLoading(false);
+      setPaymentLoading(false);
     }
   };
-  
-  const handlePaymentCancel = (details) => {
-    handlePaymentCancel(details, "cancel"); // If payment is canceled
+
+  const handlePaymentCancel = () => {
+    setPaymentLoading(false);
   };
 
   const totalInUSD = Number((calculateFinalTotal() / 300).toFixed(2));
@@ -168,40 +159,55 @@ const Checkout = () => {
             {cartItems.length === 0 ? (
               <p>Your cart is empty!</p>
             ) : (
-              Object.keys(groupedItems).map((farmerId, index) => (
-                <div key={index}>
-                  <h6><strong>Farmer Information</strong></h6>
-                  <p><strong>Name:</strong> {groupedItems[farmerId][0].farmerName}</p>
-                  <p><strong>Email:</strong> {groupedItems[farmerId][0].farmerEmail}</p>
-                  <p><strong>Address:</strong> {groupedItems[farmerId][0].farmerAddress}</p>
-                  <div className="table-responsive">
-                    <table className="table table-striped">
-                      <thead>
-                        <tr>
-                          <th>Product Image</th>
-                          <th>Product Name</th>
-                          <th>Quantity</th>
-                          <th>Price</th>
-                          <th>Total</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {groupedItems[farmerId].map((item) => (
-                          <tr key={item.id}>
-                            <td>
-                              <img src={`${item.image}`} alt={item.name} width="50" />
+              <table className="table">
+              <thead>
+                <tr className="text-center">
+                  <th>Farmer Details</th>
+                  <th>Product Image</th>
+                  <th>Product Name</th>
+                  <th>Grade</th>
+                  <th>Quantity</th>
+                  <th>Price (LKR)</th>
+                  <th>Total (LKR)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Object.keys(groupedItems).map((farmerEmail) => {
+                  const farmerGroup = groupedItems[farmerEmail];
+                  const farmerDetails = farmerGroup[0];
+                  return (
+                    <React.Fragment key={farmerEmail}>
+                      {farmerGroup.map((item, index) => (
+                        <tr key={item.id}>
+                          {index === 0 && (
+                            <td className="text-justify" rowSpan={farmerGroup.length}>
+                              <strong>{farmerDetails.farmerName}</strong><br />
+                              <span>{farmerDetails.farmerEmail}</span><br />
+                              <span>
+                                {farmerDetails.farmerAddress}, {farmerDetails.location}
+                              </span>
                             </td>
-                            <td>{item.name}</td>
-                            <td>{item.selectedQuantity}</td>
-                            <td>{item.price}</td>
-                            <td>{(item.price * item.selectedQuantity).toFixed(2)}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              ))
+                          )}
+                          <td>
+                            <img
+                              src={item.image}
+                              alt={item.name}
+                              style={{ width: "100px" }}
+                            />
+                          </td>
+                          <td className="text-center">{item.name}</td>
+                          <td className="text-center">{item.grade}</td>
+                          <td className="text-center">{item.selectedQuantity}</td>
+                          <td className="text-center">{item.price}</td>
+                          <td className="text-center">{(item.price * item.selectedQuantity).toFixed(2)}</td>
+                        </tr>
+                      ))}
+                    </React.Fragment>
+                  );
+                })}
+              </tbody>
+            </table>
+            
             )}
           </div>
         </div>
@@ -226,11 +232,21 @@ const Checkout = () => {
             <p><strong>Transportation Cost:</strong> LKR {transportationCost}</p>
             <p><strong>Total Price (LKR):</strong> LKR {calculateFinalTotal().toFixed(2)}</p>
             <p><strong>Total Price (USD):</strong> ${totalInUSD}</p>
-            <PayPalPayment
-              totalUSD={parseFloat(totalInUSD)}
-              onPaymentSuccess={handlePaymentSuccess}
-              onPaymentCancel={handlePaymentCancel}
-            />
+            <div>
+              {paymentLoading ? (
+                <div className="text-center">
+                  <div className="spinner-border" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                </div>
+              ) : (
+                <PayPalPayment
+                  totalUSD={parseFloat(totalInUSD)}
+                  onPaymentSuccess={handlePaymentSuccess}
+                  onPaymentCancel={handlePaymentCancel}
+                />
+              )}
+            </div>
           </div>
         </div>
       </div>
