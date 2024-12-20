@@ -8,14 +8,20 @@ export const ProductProvider = ({ children }) => {
   const apiURL = process.env.REACT_APP_API_NAME;
 
   // Fetch all products from the API
-  const fetchProducts = useCallback(async () => {
-    try {
-      const res = await axios.get(`${apiURL}/api/products`);
-      setProducts(res.data);
-    } catch (error) {
-      console.error("Error fetching products:", error.message);
-    }
-  }, [apiURL]); // Memoize with `apiURL` as a dependency
+const fetchProducts = useCallback(async () => {
+  const token = localStorage.getItem("token"); // Get token from localStorage
+  try {
+    const res = await axios.get(`${apiURL}/api/products`, {
+      headers: {
+        'Authorization': `Bearer ${token}`, // Add Authorization header
+      },
+    });
+    setProducts(res.data); // Set the fetched products
+    console.log("API Response:", res.data); // Log the response data
+  } catch (error) {
+    console.error("Error fetching products:", error.message); // Log any errors
+  }
+}, [apiURL]);  // Memoize with `apiURL` as a dependency
 
   // Handle the approve status update
   const handleApprove = async (productId) => {

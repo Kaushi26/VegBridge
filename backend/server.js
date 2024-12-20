@@ -13,20 +13,33 @@ const GuideRoutes = require('./routes/guideRoutes');
 
 // Initialize express app
 const app = express();
-// CORS Configuration
+
 const corsOptions = {
-  origin: [
-    process.env.FRONTEND_URL,  // Allow requests from frontend
-    'https://res.cloudinary.com',  // Allow Cloudinary domain
-  ],
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  origin: 'https://veg-bridge-sl-vr3u-ev6wcxucf-kaushicks-projects.vercel.app',  // Make sure this matches the frontend URL
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,  // Allow credentials (if needed)
+  credentials: true,  // Allow cookies and authorization headers
+  preflightContinue: false,
+  optionsSuccessStatus: 204  // For legacy browsers that don't support 204
 };
 
+// Use CORS middleware globally
 app.use(cors(corsOptions));
 
-app.use(bodyParser.json()); // Parse JSON request bodies
+// Handle preflight requests (OPTIONS)
+app.options('*', cors(corsOptions));  // Ensures OPTIONS requests are handled correctly
+
+app.options('*', (req, res) => {
+  res.header('Access-Control-Allow-Origin', 'https://veg-bridge-sl-vr3u-ev6wcxucf-kaushicks-projects.vercel.app');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.send();
+});
+
+
+// Parse JSON request bodies
+app.use(bodyParser.json());
 
 // MongoDB Connection
 connectDB();
@@ -57,11 +70,8 @@ app.use('/GuideImages', express.static(guideImagesDir));
 // Use routes
 app.use('/api', authRoutes);
 app.use('/api/products', productRoutes); 
-
-
 app.use('/api/orders', orderRoutes); 
 app.use('/api/guides', GuideRoutes);
-
 
 // Start the Server
 const PORT = process.env.PORT || 5000;

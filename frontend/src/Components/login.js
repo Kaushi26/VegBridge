@@ -18,51 +18,56 @@ const LoginSection = ({ onLoginSuccess }) => {
     }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setErrors({});
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setErrors({});
 
-    try {
-      const response = await axios.post(`${apiURL}/api/login`, formData, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+  try {
+    // Make the POST request with credentials and Authorization header
+    const response = await axios.post(`${apiURL}/api/login`, formData, {
+      headers: {
+        'Content-Type': 'application/json',
+        // Include Authorization header if using token-based authentication
+        'Authorization': `Bearer ${localStorage.getItem('token')}`, // if needed
+      },
+      withCredentials: true,  // Ensure credentials (cookies, etc.) are included in the request
+    });
 
-      // Log the response data directly
-      console.log("API Response:", response.data); 
+    // Log the response data directly
+    console.log("API Response:", response.data);
 
-      if (response.status === 400 || response.status === 401) {
-        setErrors({ general: response.data.message });
-      } else if (response.status !== 200) {
-        setErrors({ general: "Unexpected error occurred." });
+    if (response.status === 400 || response.status === 401) {
+      setErrors({ general: response.data.message });
+    } else if (response.status !== 200) {
+      setErrors({ general: "Unexpected error occurred." });
+    } else {
+      const { token, role, userDetails } = response.data;
+      localStorage.setItem("token", token);
+      localStorage.setItem("userRole", role);
+      localStorage.setItem("userDetails", JSON.stringify(userDetails));
+      console.log("Logged in user details:", userDetails);
+
+      onLoginSuccess(role);
+
+      // Redirect based on user role
+      if (role === "farmer") {
+        navigate("/farmer-marketplace");
+      } else if (role === "business") {
+        navigate("/business-marketplace");
+      } else if (role === "admin") {
+        navigate("/admin-marketplace");
       } else {
-        const { token, role, userDetails } = response.data;
-        localStorage.setItem("token", token);
-        localStorage.setItem("userRole", role);
-        localStorage.setItem("userDetails", JSON.stringify(userDetails));
-        console.log("Logged in user details:", userDetails);
-
-        onLoginSuccess(role);
-
-        if (role === "farmer") {
-          navigate("/farmer-marketplace");
-        } else if (role === "business") {
-          navigate("/business-marketplace");
-        } else if (role === "admin") {
-          navigate("/admin-marketplace");
-        } else {
-          navigate("/");
-        }
+        navigate("/");
       }
-    } catch (error) {
-      console.error("Error:", error);
-      setErrors({ general: "An error occurred. Please try again later." });
-    } finally {
-      setLoading(false);
     }
-  };
+  } catch (error) {
+    console.error("Error:", error);
+    setErrors({ general: "An error occurred. Please try again later." });
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <section className="d-flex align-items-center py-5">
