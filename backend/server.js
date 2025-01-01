@@ -10,20 +10,28 @@ const guideRoutes = require('./routes/guideRoutes');
 
 const app = express();
 
-// CORS options
+// Basic CORS configuration
 const corsOptions = {
-  origin: '*',
+  origin: '*', // Allow any origin
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,
+  credentials: false, // Do not apply credentials globally
 };
 
+// Apply CORS globally (without credentials)
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 
-app.use(bodyParser.json()); // Parse JSON bodies
-connectDB(); // MongoDB connection
+// Apply CORS with credentials for specific routes
+const corsWithCredentials = {
+  ...corsOptions,
+  credentials: true, // Allow credentials on specific routes
+};
 
+// Connect to MongoDB
+connectDB();
+
+// Cloudinary Configuration
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -35,11 +43,13 @@ app.get('/', (req, res) => {
   res.send('Backend is up and running!');
 });
 
-// Routes
+// Routes with CORS configuration
+app.use('/api/products', cors(corsWithCredentials), productRoutes); // Apply credentials here
+app.use('/api/orders', cors(corsWithCredentials), orderRoutes); // Apply credentials here
+app.use('/api/guides', cors(corsWithCredentials), guideRoutes); // Apply credentials here
+
+// Other routes that don't need credentials
 app.use('/api', authRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/orders', orderRoutes);
-app.use('/api/guides', guideRoutes);
 
 // Export serverless function
 module.exports = (req, res) => {
