@@ -32,13 +32,6 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Directory setup for uploaded files
-const uploadDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
-
-const guideImagesDir = path.join(__dirname, 'GuideImages');
-if (!fs.existsSync(guideImagesDir)) fs.mkdirSync(guideImagesDir, { recursive: true });
-
 app.use('/uploads', express.static(uploadDir));
 app.use('/GuideImages', express.static(guideImagesDir));
 
