@@ -1,0 +1,33 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "server.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "env": {
+    "MONGODB_URI": "mongodb+srv://rajarathnamsadhurshan:nRgRgHI17Vw1wpEW@vegbridgesl.bi2sm.mongodb.net/?retryWrites=true&w=majority&appName=VegBridgeSL",
+    "PORT": "5000",
+    "JWT_SECRET": "yourSuperSecretKey",
+    "UPLOADS_BASE_URL": "http://localhost:5000/uploads",
+    "PAYPAL_CLIENT_ID": "AZjXeKRPq2jic0aFC1rmjpskBpVf9uN1k0BkWoMXfsa9VmgrDkG0oGJs2ZZsS82DonmJUV0opBnUZiwO",
+    "PAYPAL_CLIENT_SECRET": "EOUbV7pDKPbn6lSmSs69DWhmwQfdR-YrJKO4bj9Ki1e_4wYchLOa-IkJ46sgieL1zgjsNrqY3R9dCUvu",
+    "PAYPAL_MODE": "sandbox",
+    "EMAIL_USER": "cb011320@students.apiit.lk",
+    "EMAIL_PASS": "K@ushick123",
+    "FRONTEND_URL": "https://veg-bridge-frontend-rc2mqzr30-kaushicks-projects.vercel.app",
+    "CLOUDINARY_CLOUD_NAME": "dx75tmnra",
+    "CLOUDINARY_API_KEY": "941647914339728",
+    "CLOUDINARY_API_SECRET": "KyxFu8JXwmraHJDXGzDMpi8ddz0",
+    "OPENROUTE_API_KEY": "5b3ce3597851110001cf624858d6183807c544fd9c42558300a2b87e",
+    "SHIPENGINE_API_BASE": "https://api.shipengine.com/v1",
+    "SHIPENGINE_API_KEY": "TEST_s/4QSCL7gNeed2D/gj0VQ7C0JgE8SgdAcYaI/5uZZbg"
+  },
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/server.js"
+    }
+  ]
+}
