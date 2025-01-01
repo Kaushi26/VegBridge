@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ProductProvider } from './Components/ProductContext';
 import { CartProvider } from './Components/CartContext';
+import 'font-awesome/css/font-awesome.min.css';
 import Navbar from './Components/Navigation';
 import Navbar2 from './Components/App-Navbar';
 import HomePicture from './Components/Homepic';
@@ -25,8 +26,17 @@ import FarmerViewGuides from './Components/Farmer Guides';
 import AdminViewGuides from './Components/A-Guides';
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userRole, setUserRole] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    () => JSON.parse(localStorage.getItem('isLoggedIn')) || false
+  );
+  const [userRole, setUserRole] = useState(
+    () => localStorage.getItem('userRole') || ''
+  );
+
+  useEffect(() => {
+    localStorage.setItem('isLoggedIn', JSON.stringify(isLoggedIn));
+    localStorage.setItem('userRole', userRole);
+  }, [isLoggedIn, userRole]);
 
   const handleLoginSuccess = (role) => {
     setIsLoggedIn(true);
@@ -56,33 +66,23 @@ function App() {
                   )
                 }
               />
-              <Route
-                path="/"
-                element={
-                  !isLoggedIn ? (
-                    <Homepage />
-                  ) : (
-                    <GuidesSelector userRole={userRole} />
-                  )
-                }
-              />
               <Route path="/register" element={<RegisterForm />} />
               <Route
                 path="/login"
                 element={<LoginSection onLoginSuccess={handleLoginSuccess} />}
               />
               <Route
-               path="/farmer-transactions"
-                element={isLoggedIn ? <FarmerTransactions />: <Homepage />} 
+                path="/farmer-transactions"
+                element={isLoggedIn ? <FarmerTransactions /> : <Homepage />}
               />
               <Route
-               path="/admin-transactions" 
-               element={isLoggedIn ? <AdminTransactions /> : <Homepage />}
+                path="/admin-transactions"
+                element={isLoggedIn ? <AdminTransactions /> : <Homepage />}
               />
               <Route
-               path="/business-transactions"
-               element={isLoggedIn ? <BusinessTransactions /> : <Homepage />} 
-              />  
+                path="/business-transactions"
+                element={isLoggedIn ? <BusinessTransactions /> : <Homepage />}
+              />
               <Route
                 path="/add-to-cart"
                 element={isLoggedIn ? <AddToCart /> : <Homepage />}
@@ -104,23 +104,15 @@ function App() {
                 element={<BusinessMarketplace />}
               />
               <Route
-               path="/admin-marketplace"
-               element={<AdminMarketplace />} 
+                path="/admin-marketplace"
+                element={<AdminMarketplace />}
               />
-
               <Route
                 path="/stock-dashboard"
                 element={isLoggedIn ? <FarmerStockDashboard /> : <Homepage />}
               />
-
-              <Route
-                path="/admin-guides"
-                element={< AdminViewGuides/>}
-              />
-              <Route
-                path="/farmer-guides"
-                element={< FarmerViewGuides/>}
-              />
+              <Route path="/admin-guides" element={<AdminViewGuides />} />
+              <Route path="/farmer-guides" element={<FarmerViewGuides />} />
               <Route
                 path="/add-guide"
                 element={isLoggedIn ? <AddGuide /> : <Homepage />}
@@ -142,15 +134,6 @@ const MarketplaceSelector = ({ userRole }) => {
   };
 
   return marketplaceMapping[userRole] || <Homepage />;
-};
-
-const GuidesSelector = ({ userRole }) => {
-  const guideMapping = {
-    farmer: <FarmerViewGuides />,
-    admin: <AdminViewGuides />,
-  };
-
-  return guideMapping[userRole] || <Homepage />;
 };
 
 export default App;

@@ -1,6 +1,8 @@
 const express = require('express');
 const multer = require('multer');
 const Product = require('../models/Product');
+const Notification = require('../models/Notification');
+const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const router = express.Router();
 const fs = require('fs');
@@ -109,9 +111,6 @@ router.post('/', authenticateToken, upload.single('image'), async (req, res) => 
   }
 });
 
-
-
-
 // Update product status (Approve/Reject)
 router.put('/:productId/status', async (req, res) => {
   const { productId } = req.params;
@@ -133,12 +132,89 @@ router.put('/:productId/status', async (req, res) => {
       return res.status(404).json({ message: 'Product not found.' });
     }
 
+    if (status === 'Approved') {
+      // Create the notification message with product details as a JSON string
+      const message = JSON.stringify({
+        text: `A new product has been listed!`,
+        details: {
+          name: product.name,
+          quantity: product.quantity,
+          quality: product.grade,
+          address: product.farmerAddress,
+          location: product.location,
+          image: product.image, // Assuming product.imageUrl contains the image URL
+        },
+      });
+
+      // Find users who have selected the required sorting quality for the product's grade
+      const usersToNotify = await User.find({ [`sortingQuality.${product.grade}`]: true });
+
+      if (usersToNotify.length > 0) {
+        // Use bulkWrite for efficient batch insertion
+        const notifications = usersToNotify.map(user => ({
+          updateOne: {
+            filter: { userId: user._id, productId: product._id },
+            update: { $setOnInsert: { userId: user._id, message: message, productId: product._id } },
+            upsert: true,  // Ensure no duplicate notifications
+          },
+        }));
+
+        if (notifications.length > 0) {
+          // Execute the bulkWrite operation
+          await Notification.bulkWrite(notifications);
+          console.log('Notifications processed for product approval:', product.name);
+        }
+      } else {
+        console.log('No users with matching sorting quality for this product.');
+      }
+    }
+
+    // Send response with updated product
     res.status(200).json(product);
   } catch (error) {
     console.error('Error updating product status:', error);
     res.status(500).json({ message: 'Server error.' });
   }
 });
+
+
+// Route to mark notifications as read
+router.put("/notifications/:notificationId/read", async (req, res) => {
+  const { notificationId } = req.params;
+  
+  try {
+    const notification = await Notification.findByIdAndUpdate(
+      notificationId,
+      { read: true },
+      { new: true } // Return the updated document
+    );
+
+    if (!notification) {
+      return res.status(404).json({ message: "Notification not found." });
+    }
+
+    res.status(200).json({ message: "Notification marked as read.", notification });
+  } catch (error) {
+    console.error("Error marking notification as read:", error);
+    res.status(500).json({ message: "Server error." });
+  }
+});
+
+// Route to get notifications for a user
+router.get("/notifications/:userId", async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const notifications = await Notification.find({ userId })
+      .sort({ timestamp: -1 }) // Most recent first
+      .exec();
+
+    res.status(200).json(notifications);
+  } catch (error) {
+    console.error("Error fetching notifications:", error);
+    res.status(500).json({ message: "Server error." });
+  }
+});
+
 
 // Get All Products (GET)
 router.get('/', async (req, res) => {
@@ -147,34 +223,6 @@ router.get('/', async (req, res) => {
     res.status(200).json(products);
   } catch (error) {
     console.error("Error fetching products:", error.message);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-});
-
-// POST order route
-router.post('/submit-order', authenticateToken, async (req, res) => {
-  try {
-    const { buyerDetails, products, transportation, transportationCost, totalPrice } = req.body;
-
-    // Check if all required fields are provided
-    if (!buyerDetails || !products || !totalPrice) {
-      return res.status(400).json({ message: 'Missing required fields.' });
-    }
-
-    // Create the order
-    const order = new Order({
-      buyerDetails,
-      products,
-      transportation,
-      transportationCost,
-      totalPrice,
-      userId: req.user.userId, // Associate order with logged-in user
-    });
-
-    await order.save();
-    res.status(201).json({ message: 'Order placed successfully', order });
-  } catch (error) {
-    console.error("Error placing order:", error.message);
     res.status(500).json({ message: 'Internal server error' });
   }
 });
@@ -219,7 +267,9 @@ router.delete('/:productId', authenticateToken, async (req, res) => {
 
     // If there's an associated image, delete it from Cloudinary
     if (product.image) {
-      const publicId = product.image.split('/').pop().split('.')[0]; // Extract the public ID from the Cloudinary URL
+      const publicId = product.image.split('/').slice(-2).join('/').split('.')[0];
+      console.log("Extracted publicId for deletion:", publicId);
+      
       cloudinary.uploader.destroy(publicId, (error, result) => {
         if (error) {
           console.error("Error deleting image from Cloudinary:", error);

@@ -17,7 +17,6 @@ const fetchProducts = useCallback(async () => {
       },
     });
     setProducts(res.data); // Set the fetched products
-    console.log("API Response:", res.data); // Log the response data
   } catch (error) {
     console.error("Error fetching products:", error.message); // Log any errors
   }

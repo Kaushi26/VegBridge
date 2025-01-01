@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+
 
 const RegisterForm = () => {
   const [role, setRole] = useState('');
@@ -73,10 +75,12 @@ const RegisterForm = () => {
     if (validateForm()) {
       setLoading(true);
       try {
-        const response = await fetch(`${apiURL}/api/register`, {
-          method: 'POST',
+        const response = await axios.post(`${apiURL}/api/register`, {
+          ...formData,
+          role,
+          sortingQuality,
+        }, {
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...formData, role, sortingQuality })
         });
         const data = await response.json();
         if (data.errors) {
@@ -229,7 +233,7 @@ const RegisterForm = () => {
                   {role === 'business' && (
                     <div className="mb-3">
                       <h6 className="mb-2 fw-bold">Sorting Quality:</h6>
-                      {['underripe', 'ripe', 'overripe', 'spoil'].map((quality) => (
+                      {['Underripe', 'Ripe', 'Overripe', 'About to spoil'].map((quality) => (
                         <div className="form-check" key={quality}>
                           <input
                             className="form-check-input"

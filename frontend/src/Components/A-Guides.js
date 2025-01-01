@@ -27,9 +27,7 @@ const AdminViewGuides = () => {
     try {
       const token = localStorage.getItem('token');
   
-      // Using fetch to make the DELETE request
-      const response = await fetch(`${apiURL}/api/guides/${id}`, {
-        method: 'DELETE',
+      const response = await axios.delete(`${apiURL}/api/guides/${id}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },

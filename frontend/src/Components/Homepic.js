@@ -9,7 +9,7 @@ const HomePicture = () => {
           src={Homepicture}
           alt="A beautiful farming landscape"
           className="img-fluid w-100"
-          style={{ height: '80vh', objectFit: 'cover' }}
+          style={{ height: '75vh', objectFit: 'cover' }}
         />
       </div>
     </section>

@@ -50,7 +50,7 @@ const PayPalPayment = ({ totalUSD, onPaymentSuccess }) => {
               {
                 amount: {
                   currency_code: "USD",
-                  value: totalUSD.toFixed(2),
+                  value: totalUSD,
                 },
                 custom_id: buyerDetails.id,
               },

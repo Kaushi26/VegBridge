@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { Table, Container, Spinner } from "react-bootstrap";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 const FarmerTransactions = () => {
   const [userDetails, setUserDetails] = useState(null);
@@ -10,47 +12,38 @@ const FarmerTransactions = () => {
 
   // Fetch user data from localStorage
   const fetchUserData = () => {
-    const user = JSON.parse(localStorage.getItem('userDetails'));
+    const user = JSON.parse(localStorage.getItem("userDetails"));
     if (!user) {
-      setError('You must be logged in.');
+      setError("You must be logged in.");
       return;
     }
-
-    const { name, city, address, email, id } = user;
-    setUserDetails({ name, city, address, email, id });
+    const { name, location, address, email, id } = user;
+    setUserDetails({ name, location, address, email, id });
   };
 
+  // Fetch transactions based on user name
   useEffect(() => {
-    // Fetch user data when the component mounts
     fetchUserData();
   }, []);
 
   useEffect(() => {
-    // If userDetails are available, fetch transactions
     if (userDetails && userDetails.name) {
       const fetchTransactions = async () => {
-        console.log("Fetching transactions for:", userDetails.name);
-
         try {
-          const token = localStorage.getItem('token');
+          const token = localStorage.getItem("token");
           const response = await axios.get(
             `${apiURL}/api/orders/transactions/${userDetails.name}/farmer`,
             {
-              headers: {
-                Authorization: `Bearer ${token}`, // Add token to the request headers
-              },
+              headers: { Authorization: `Bearer ${token}` },
             }
           );
-          console.log("API Response:", response.data);
-
           if (response.data && response.data.length > 0) {
             setTransactions(response.data);
           } else {
             setError("No transactions found.");
           }
         } catch (err) {
-          console.error("Error fetching transactions:", err);
-          setError("Error fetching transactions");
+          setError("Error fetching transactions.");
         } finally {
           setLoading(false);
         }
@@ -58,134 +51,143 @@ const FarmerTransactions = () => {
 
       fetchTransactions();
     }
-  }, [userDetails, apiURL]); // Trigger when userDetails are available/changed
+  }, [userDetails, apiURL]);
 
-  if (loading) return <div>Loading...</div>;
+  // Group transactions by date
+  const groupTransactionsByDate = (transactions) => {
+    return transactions.reduce((grouped, transaction) => {
+      const date = new Date(transaction.createdAt).toLocaleDateString();
+      if (!grouped[date]) {
+        grouped[date] = [];
+      }
+      grouped[date].push(transaction);
+      return grouped;
+    }, {});
+  };
 
-  // Handle error state
+  if (loading) {
+    return (
+      <div className="text-center mt-5">
+        <Spinner animation="border" variant="primary" />
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
   if (error) {
-    return (
-      <div className="container mt-5">
-        <br/>
-        <div className="text-center text-muted mt-5">{error}</div>
-      </div>
-    );
+    return <div className="text-center mt-5 text-danger">{error}</div>;
   }
 
-  // Handle empty transactions
-  if (transactions.length === 0) {
-    return (
-      <div className="container mt-5">
-        <br/>
-        <br/>
-        <div className="text-center mt-5 text-muted">No transactions available for this farmer.</div>
-      </div>
-    );
-  }
-
-  // Group transactions by buyer
-  const groupedTransactions = transactions.reduce((acc, transaction) => {
-    const buyer = transaction.buyerDetails.name;
-    if (!acc[buyer]) {
-      acc[buyer] = [];
-    }
-
-    transaction.farmers.forEach((farmer) => {
-      const farmerName = farmer.farmerDetails.farmerName;
-      acc[buyer].push({
-        farmerName,
-        products: farmer.products,
-        totalPrice: transaction.totalPrice,
-        createdAt: transaction.createdAt, // Add createdAt for date
-        transportation: transaction.transportation,
-      });
-    });
-
-    return acc;
-  }, {});
+  const groupedTransactions = groupTransactionsByDate(transactions);
 
   return (
-    <div className="container mt-5">
-        <br />
-      <h3 className="text-center mb-4">Farmer Transaction History</h3>
-      <div className="table-responsive">
-        <table className="table table-striped table-bordered">
-          <thead>
-            <tr className="text-center"> {/* Center-align header row */}
-              <th>Purchase Date</th>
-              <th>Buyer Name</th>
-              <th>Product Image</th>
-              <th>Product Name</th>
-              <th>Quantity</th>
-              <th>Quality</th>
-              <th>Price (per kg)</th>
-              <th>Total Price (Product)</th>
-              <th>Transportation</th>
-              <th>Total Price (Transaction)</th>
-            </tr>
-          </thead>
-          <tbody>
-            {Object.keys(groupedTransactions).map((buyer) =>
-              groupedTransactions[buyer].map((transaction, idx) => {
-                const totalTransactionPrice = transaction.products.reduce(
-                  (sum, product) => sum + product.price * product.quantity,
-                  0
-                );
-
-                return transaction.products.map((product, productIdx) => (
-                  <tr key={`${buyer}-${idx}-${productIdx}`} className="text-center">
-                    {/* Display Buyer, and Date only once */}
-                    {productIdx === 0 ? (
-                      <>
-                        <td rowSpan={transaction.products.length}>
-                          {new Date(transaction.createdAt).toLocaleDateString()}
-                        </td>
-                        <td rowSpan={transaction.products.length}>{buyer}</td>
-                      </>
-                    ) : null}
-
-                    <td>
-                      <img
-                        src={`${product.image}`}
-                        alt={product.name}
-                        className="img-fluid rounded"
-                        style={{
-                            width: "100px", 
-                            height: "auto", 
-                            objectFit: "contain",
-                            display: "block", 
-                            marginLeft: "auto", 
-                            marginRight: "auto", 
-                        }}
-                      />
-                    </td>
-                    <td>{product.name}</td>
-                    <td>{product.quantity} Kg</td>
-                    <td>{product.grade}</td>
-                    <td>LKR {product.price}</td>
-                    <td>LKR {product.price * product.quantity}</td>
-
-                    {/* Display Transportation only once for each transaction */}
-                    {productIdx === 0 && (
-                      <td rowSpan={transaction.products.length}>
-                        {transaction.transportation}
-                      </td>
-                    )}
-
-                    {/* Display total price only once for each transaction */}
-                    {productIdx === 0 && (
-                      <td rowSpan={transaction.products.length}>
-                        LKR {totalTransactionPrice}
-                      </td>
-                    )}
+    <Container className="mt-5">
+      <br />
+      <br />
+      <br />
+      {Object.entries(groupedTransactions).map(([date, transactions], idx) => (
+        <div key={idx} className="mb-5 border p-3">
+          <h4 className="text-primary">
+            <strong>Date:</strong> {date}
+          </h4>
+          {transactions.map((transaction, tidx) => (
+            <div key={tidx} className="mb-5">
+              <h5>
+                <strong>Net Total:</strong> LKR {transaction.totalPrice}
+              </h5>
+              <Table striped bordered hover className="mt-3">
+                <thead>
+                  <tr>
+                    <th className="text-center align-middle" style={{ width: "15%" }}>
+                      Buyer Details
+                    </th>
+                    <th className="text-center align-middle" style={{ width: "15%" }}>
+                      Product Image
+                    </th>
+                    <th className="text-center align-middle" style={{ width: "20%" }}>
+                      Product Info
+                    </th>
+                    <th className="text-center align-middle" style={{ width: "12.5%" }}>
+                      Total Price of Product
+                    </th>
+                    <th className="text-center align-middle" style={{ width: "15%" }}>
+                      Transportation
+                    </th>
+                    <th className="text-center align-middle" style={{ width: "27.5%" }}>
+                      Reviews
+                    </th>
                   </tr>
-                ));
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
+                </thead>
+                <tbody>
+                  {transaction.farmers.map((farmer, fIdx) => {
+                    const products = farmer.products;
+                    return products.map((product, pIdx) => (
+                      <tr key={`${tidx}-${fIdx}-${pIdx}`}>
+                        {pIdx === 0 && (
+                          <td
+                            className="align-middle"
+                            rowSpan={products.length}
+                            style={{ whiteSpace: "nowrap" }}
+                          >
+                            <strong>Name:</strong> {transaction.buyerDetails.name}
+                            <br />
+                            <strong>Email:</strong> {transaction.buyerDetails.email}
+                            <br />
+                            <strong>Address:</strong> {transaction.buyerDetails.address}
+                          </td>
+                        )}
+                        <td className="text-center">
+                          <img
+                            src={product.image}
+                            alt={product.name}
+                            style={{ width: "120px", height: "100px", objectFit: "cover" }}
+                          />
+                        </td>
+                        <td>
+                          <strong>Product:</strong> {product.name}
+                          <br />
+                          <strong>Quantity:</strong> {product.quantity} Kg
+                          <br />
+                          <strong>Grade:</strong> {product.grade}
+                          <br />
+                          <strong>Price per Kg:</strong> LKR {product.price}
+                        </td>
+                        <td className="text-center align-middle">
+                          LKR {product.quantity * product.price}
+                        </td>
+                        {pIdx === 0 && (
+                          <td
+                            className="align-middle text-center"
+                            rowSpan={products.length}
+                          >
+                            <strong>Mode:</strong> {transaction.transportation}
+                            <br />
+                            <strong>Cost:</strong> LKR {transaction.transportationCost}
+                          </td>
+                        )}
+                        
+                        <td className="text-center align-middle">
+                          {product.reviews.length > 0 ? (
+                            <div>
+                              <strong>Rating:</strong> {product.reviews[0].rating}/5
+                              <br />
+                              <strong>Comment:</strong> {product.reviews[0].comment}
+                            </div>
+                          ) : (
+                            "No Reviews"
+                          )}
+                        </td>
+
+                      </tr>
+                    ));
+                  })}
+                </tbody>
+              </Table>
+            </div>
+          ))}
+        </div>
+      ))}
+    </Container>
   );
 };
 

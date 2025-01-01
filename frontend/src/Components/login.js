@@ -34,9 +34,6 @@ const handleSubmit = async (e) => {
       withCredentials: true,  // Ensure credentials (cookies, etc.) are included in the request
     });
 
-    // Log the response data directly
-    console.log("API Response:", response.data);
-
     if (response.status === 400 || response.status === 401) {
       setErrors({ general: response.data.message });
     } else if (response.status !== 200) {
@@ -46,8 +43,6 @@ const handleSubmit = async (e) => {
       localStorage.setItem("token", token);
       localStorage.setItem("userRole", role);
       localStorage.setItem("userDetails", JSON.stringify(userDetails));
-      console.log("Logged in user details:", userDetails);
-
       onLoginSuccess(role);
 
       // Redirect based on user role

@@ -17,12 +17,20 @@ const orderSchema = new mongoose.Schema({
       },
       products: [
         {
-          productId: String,
+          productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' }, // Use MongoDB _id
           name: String,
           quantity: Number,
           price: Number,
           grade: String,
           image: String,
+          reviews: [
+            {
+              rating: { type: Number, min: 1, max: 5 },
+              comment: String,
+              createdAt: { type: Date, default: Date.now },
+              reviewerName: { type: String, default: function() { return this.buyerDetails.name; } },
+            }
+          ]
         },
       ],
     },
@@ -33,10 +41,10 @@ const orderSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false },
   createdAt: { type: Date, default: Date.now },
   paymentDetails: {
-    paymentId: String, // Store PayPal transaction ID
-    paymentMethod: String, // Store payment method (e.g., PayPal)
-    paymentDate: Date, // Store the payment date
-    amount: Number, // Store the payment amount
+    paymentId: String, 
+    paymentMethod: String,
+    paymentDate: Date,
+    amount: Number,
     paymentStatus: { type: String, enum: ['PENDING', 'COMPLETED', 'FAILED'], default: 'PENDING' },
   },
 });

@@ -6,8 +6,6 @@ console.log('Mongo URI:', process.env.MONGODB_URI); // Logs the MongoDB URI to c
 const connectDB = async () => {
   try {
     const conn = await mongoose.connect(process.env.MONGODB_URI, {
-      useNewUrlParser: true,  // Ensures use of the new MongoDB URI parser
-      useUnifiedTopology: true,  // Helps with certain connection issues
       ssl: true,  // Explicitly enable SSL
       tls: true
     });
@@ -19,3 +17,5 @@ const connectDB = async () => {
 };
 
 module.exports = connectDB;
+
+

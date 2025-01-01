@@ -35,7 +35,7 @@ const AddGuide = () => {
         },
       });
 
-      alert('Guide added successfully!');
+
       // Clear form
       setTitle('');
       setUrl('');
@@ -43,6 +43,7 @@ const AddGuide = () => {
       setImageFile(null);
       setPreviewImage('');
       navigate('/admin-guides'); // Use useNavigate to redirect
+      alert('Guide added successfully!');
     } catch (error) {
       console.error('Error adding guide:', error);
       alert('Failed to add guide.');

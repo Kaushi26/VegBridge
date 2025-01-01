@@ -34,8 +34,6 @@ const FarmerStockDashboard = () => {
     // Fetch stock details for the logged-in farmer
     const fetchStocks = async () => {
       if (!userDetails?.name) return;
-
-      console.log(`Fetching stocks for farmer: ${userDetails.name}`);
       try {
         const token = localStorage.getItem('token'); // Retrieve token from localStorage
         const response = await axios.get(
@@ -46,8 +44,6 @@ const FarmerStockDashboard = () => {
             },
           }
         );
-        console.log('Stocks response:', response.data);
-
         if (response.data && response.data.length > 0) {
           setStocks(response.data);
         } else {
