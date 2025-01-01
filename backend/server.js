@@ -1,8 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const fs = require('fs');
-const path = require('path');
 const cloudinary = require('cloudinary').v2;
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/auth');
@@ -23,7 +21,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 
-app.use(bodyParser.json());  // Parse JSON bodies
+app.use(bodyParser.json()); // Parse JSON bodies
 connectDB(); // MongoDB connection
 
 cloudinary.config({
@@ -32,12 +30,18 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// Root route (for testing)
+app.get('/', (req, res) => {
+  res.send('Backend is up and running!');
+});
+
+// Routes
 app.use('/api', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/guides', guideRoutes);
 
-// Start server
+// Export serverless function
 module.exports = (req, res) => {
   app(req, res);
 };
