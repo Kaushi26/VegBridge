@@ -47,9 +47,7 @@ app.get('/', (req, res) => {
 app.use('/api/products', cors(corsWithCredentials), productRoutes); // Apply credentials here
 app.use('/api/orders', cors(corsWithCredentials), orderRoutes); // Apply credentials here
 app.use('/api/guides', cors(corsWithCredentials), guideRoutes); // Apply credentials here
-
-// Other routes that don't need credentials
-app.use('/api', authRoutes);
+app.use('/api',cors(corsWithCredentials), authRoutes);
 
 // Export serverless function
 module.exports = (req, res) => {
