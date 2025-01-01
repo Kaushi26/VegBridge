@@ -32,9 +32,6 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-app.use('/uploads', express.static(uploadDir));
-app.use('/GuideImages', express.static(guideImagesDir));
-
 app.use('/api', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
