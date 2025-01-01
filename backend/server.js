@@ -10,23 +10,17 @@ const guideRoutes = require('./routes/guideRoutes');
 
 const app = express();
 
-// Basic CORS configuration
+// CORS configuration with credentials and a fixed frontend URL
 const corsOptions = {
-  origin: '*', // Allow any origin
+  origin: 'https://veg-bridge-frontend.vercel.app',  // Fixed frontend domain
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: false, // Do not apply credentials globally
+  credentials: true,  // Allow credentials (cookies, headers, etc.)
 };
 
-// Apply CORS globally (without credentials)
+// Apply CORS globally with the fixed origin and credentials support
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
-
-// Apply CORS with credentials for specific routes
-const corsWithCredentials = {
-  ...corsOptions,
-  credentials: true, // Allow credentials on specific routes
-};
 
 // Connect to MongoDB
 connectDB();
@@ -43,13 +37,13 @@ app.get('/', (req, res) => {
   res.send('Backend is up and running!');
 });
 
-// Routes with CORS configuration
-app.use('/api/products', cors(corsWithCredentials), productRoutes); // Apply credentials here
-app.use('/api/orders', cors(corsWithCredentials), orderRoutes); // Apply credentials here
-app.use('/api/guides', cors(corsWithCredentials), guideRoutes); // Apply credentials here
-app.use('/api',cors(corsWithCredentials), authRoutes);
+// Routes with the same CORS configuration applied
+app.use('/api/products', cors(corsOptions), productRoutes);
+app.use('/api/orders', cors(corsOptions), orderRoutes);
+app.use('/api/guides', cors(corsOptions), guideRoutes);
+app.use('/api', cors(corsOptions), authRoutes);
 
-// Export serverless function
+// Export serverless function for Vercel
 module.exports = (req, res) => {
   app(req, res);
 };
