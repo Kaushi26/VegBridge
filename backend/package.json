@@ -1,8 +1,9 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "server.js",  // Update to point to the main file (server.js)
   "scripts": {
+    "start": "node server.js",  // Required for deployment on Vercel
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
