@@ -2,9 +2,10 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useCartContext } from "./CartContext";
+import { PayPalScriptProvider} from "@paypal/react-paypal-js";
 import PayPalPayment from "./PayPalPayment";
 
-const Checkout = () => {
+const Checkout = ()=> {
   const location = useLocation();
   const navigate = useNavigate();
   const cartItems = useMemo(() => location.state?.cartItems || [], [location.state?.cartItems]);
@@ -14,9 +15,10 @@ const Checkout = () => {
   const [shippingDetails] = useState(null);
   const [buyerDetails, setBuyerDetails] = useState(null);
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(true); // Overall loading state
+  const [loading, setLoading] = useState(true);
   const [paymentLoading, setPaymentLoading] = useState(false);
-  const [shippingLoading, setShippingLoading] = useState(false); // Loading for shipping calculation
+  const [shippingLoading, setShippingLoading] = useState(false);
+  const [payPalReady, setPayPalReady] = useState(false); // State to track if PayPal button is ready
   const apiURL = process.env.REACT_APP_API_NAME;
 
   useEffect(() => {
@@ -38,6 +40,15 @@ const Checkout = () => {
       return acc;
     }, {});
   }, [cartItems]);
+
+  useEffect(() => {
+    // Set the PayPal button to be ready once the script is loaded
+    const loadPayPal = async () => {
+      await window.paypal.Buttons; // Check that PayPal buttons are loaded
+      setPayPalReady(true);
+    };
+    loadPayPal();
+  }, []);
 
   useEffect(() => {
     const fetchShippingRates = async () => {
@@ -100,6 +111,7 @@ const Checkout = () => {
         await Promise.all(shippingRatePromises);
         setTransportationCost(totalShippingCost);
         setShippingLoading(false);
+        setPayPalReady(true); // Set PayPal button ready state after shipping rates are fetched
       } catch (error) {
         console.error("Error fetching shipping rates:", error.message);
         setError("Error fetching shipping rates. Please try again later.");
@@ -111,6 +123,7 @@ const Checkout = () => {
       fetchShippingRates();
     } else {
       setTransportationCost(0);
+      setPayPalReady(true); // Set PayPal ready even if not using Delivery
     }
   }, [transportation, buyerDetails, groupedItems, apiURL]);
 
@@ -411,14 +424,15 @@ const Checkout = () => {
         </div>
   
         {/* Order Summary */}
+        {/* Payment Section */}
         <div className="col-md-4 mb-4">
           <div className="card shadow p-4">
-            <h5 className="mb-4">Order Summary</h5>
+            <h5 className="mb-4">Payment</h5>
             <div className="form-group">
-              <label htmlFor="transportation">Select Transportation:</label>
+              <label htmlFor="transportation">Select Transportation</label>
               <select
-                id="transportation"
                 className="form-control"
+                id="transportation"
                 value={transportation}
                 onChange={handleTransportationChange}
               >
@@ -426,25 +440,37 @@ const Checkout = () => {
                 <option value="Delivery">Delivery</option>
               </select>
             </div>
-            <div className="mt-4">
-              <p><strong>Subtotal:</strong> {calculateTotal()} LKR</p>
-              <p><strong>Delivery Cost:</strong> {transportationCost} LKR</p>
-              <p><strong>Net Total:</strong> {calculateFinalTotal} LKR</p>
-              <p><strong>Total in USD:</strong> ${totalInUSD}</p>
-            </div>
-  
-            <div className="mt-4">
-              {shippingLoading ? (
-                <div>Calculating shipping...</div>
-              ) : (
-                <PayPalPayment
-                  totalUSD={totalInUSD}
-                  onPaymentSuccess={handlePaymentSuccess}
-                  onPaymentCancel={handlePaymentCancel}
-                  loading={paymentLoading}
-                />
-              )}
-            </div>
+
+            {shippingLoading ? (
+              <div>Loading shipping rates...</div>
+            ) : (
+              <>
+                <div className="mt-4">
+                  <p><strong>Subtotal:</strong> {calculateTotal()} LKR</p>
+                  <p><strong>Delivery Cost:</strong> {transportationCost} LKR</p>
+                  <p><strong>Net Total:</strong> {calculateFinalTotal} LKR</p>
+                  <p><strong>Total in USD:</strong> ${totalInUSD}</p>
+                </div>
+
+                {/* PayPal Script Provider */}
+                <PayPalScriptProvider
+                  options={{
+                    "client-id": "AZjXeKRPq2jic0aFC1rmjpskBpVf9uN1k0BkWoMXfsa9VmgrDkG0oGJs2ZZsS82DonmJUV0opBnUZiwO",
+                    "currency": "USD",
+                  }}
+                >
+                  {/* Conditionally render PayPal Payment based on the payPalReady state */}
+                  {payPalReady && (
+                    <PayPalPayment
+                      totalUSD={totalInUSD}
+                      onPaymentSuccess={handlePaymentSuccess}
+                      onPaymentCancel={handlePaymentCancel}
+                      loading={paymentLoading}
+                    />
+                  )}
+                </PayPalScriptProvider>
+              </>
+            )}
           </div>
         </div>
       </div>
