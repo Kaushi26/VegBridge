@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
+import { PayPalButtons } from "@paypal/react-paypal-js";
 
 const PayPalPayment = ({ totalUSD, onPaymentSuccess }) => {
   const [buyerDetails, setBuyerDetails] = useState(null);
   const [error, setError] = useState("");
+  const [payPalReady, setPayPalReady] = useState(false); // Track PayPal readiness
+  const [loading, setLoading] = useState(true); // Track PayPal loading state
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("userDetails"));
@@ -13,6 +15,12 @@ const PayPalPayment = ({ totalUSD, onPaymentSuccess }) => {
     }
     const { name, city, address, email, id } = user;
     setBuyerDetails({ name, city, address, email, id });
+
+    // Simulate PayPal loading
+    setTimeout(() => {
+      setLoading(false); // Set loading to false after simulating load time
+      setPayPalReady(true); // Set PayPal ready state to true
+    }, 1000); // Simulating a 1-second load time
   }, []);
 
   const onPaymentCancel = () => {
@@ -21,7 +29,7 @@ const PayPalPayment = ({ totalUSD, onPaymentSuccess }) => {
 
   const submitOrder = async (paymentData) => {
     try {
-      // Send only payment data to Checkout for database submission
+      // Send payment data to backend or database
       if (onPaymentSuccess) {
         onPaymentSuccess(paymentData);
       }
@@ -35,61 +43,57 @@ const PayPalPayment = ({ totalUSD, onPaymentSuccess }) => {
   }
 
   return (
-    <PayPalScriptProvider
-      options={{
-        "client-id": 'AZjXeKRPq2jic0aFC1rmjpskBpVf9uN1k0BkWoMXfsa9VmgrDkG0oGJs2ZZsS82DonmJUV0opBnUZiwO',
-        "currency": "USD",
-      }}
-    >
-      <PayPalButtons
-        style={{ layout: "vertical" }}
-        fundingSource="paypal"
-        createOrder={(data, actions) => {
-          return actions.order.create({
-            purchase_units: [
-              {
-                amount: {
-                  currency_code: "USD",
-                  value: totalUSD,
-                },
-                custom_id: buyerDetails.id,
-              },
-            ],
-          });
-        }}
-
-        // In the onApprove method:
-        onApprove={(data, actions) => {
-          return actions.order.capture().then(async (details) => {
-            const paymentStatus = details.status;
-
-            if (paymentStatus === "COMPLETED") {
-              console.log("Payment completed successfully:", details);
-
-              const paymentData = {
-                paymentId: details.id,
-                paymentStatus: paymentStatus,
-                amount: totalUSD, // Total order amount
-                paymentMethod: "PayPal", // Or use dynamic method if needed
-                paymentDate: new Date(), // Set the payment date
-              };
-
-              await submitOrder(paymentData); // Send only payment-related details to Checkout
-            } else {
-              console.warn("Payment not completed:", paymentStatus);
-            }
-          });
-        }}
-
-        onError={(err) => {
-          console.error("PayPal payment error:", err);
-          onPaymentCancel();
-        }}
-        onCancel={() => {
-          onPaymentCancel();
-        }}
-      />
-    </PayPalScriptProvider>
+    <>
+      {loading ? (
+        <div>Loading PayPal...</div> // Show loading state while PayPal is loading
+      ) : (
+        <>
+          {!payPalReady ? (
+            <div>PayPal is not ready yet...</div> // Show message until PayPal is ready
+          ) : (
+            <PayPalButtons
+              style={{ layout: "vertical" }}
+              fundingSource="paypal"
+              createOrder={(data, actions) => {
+                return actions.order.create({
+                  purchase_units: [
+                    {
+                      amount: {
+                        currency_code: "USD",
+                        value: totalUSD,
+                      },
+                      custom_id: buyerDetails.id,
+                    },
+                  ],
+                });
+              }}
+              onApprove={(data, actions) => {
+                return actions.order.capture().then(async (details) => {
+                  const paymentStatus = details.status;
+                  if (paymentStatus === "COMPLETED") {
+                    const paymentData = {
+                      paymentId: details.id,
+                      paymentStatus: paymentStatus,
+                      amount: totalUSD,
+                      paymentMethod: "PayPal",
+                      paymentDate: new Date(),
+                    };
+                    await submitOrder(paymentData);
+                  }
+                });
+              }}
+              onError={(err) => {
+                console.error("PayPal payment error:", err);
+                onPaymentCancel();
+              }}
+              onCancel={() => {
+                onPaymentCancel();
+              }}
+            />
+          )}
+        </>
+      )}
+    </>
   );
 };
 
