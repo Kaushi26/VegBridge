@@ -7,7 +7,7 @@ const FarmerTransactions = () => {
   const [userDetails, setUserDetails] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [, setError] = useState("");
   const apiURL = process.env.REACT_APP_API_NAME;
 
   // Fetch user data from localStorage
@@ -74,10 +74,16 @@ const FarmerTransactions = () => {
     );
   }
 
-  if (error) {
-    return <div className="text-center mt-5 text-danger">{error}</div>;
+  // Handle empty transactions
+  if (transactions.length === 0) {
+    return (
+      <div className="container mt-5">
+        <br />
+        <br />
+        <div className="text-center mt-5 text-muted">No transactions available for this farmer.</div>
+      </div>
+    );
   }
-
   const groupedTransactions = groupTransactionsByDate(transactions);
 
   return (
