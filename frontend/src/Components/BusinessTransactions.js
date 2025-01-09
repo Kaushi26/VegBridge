@@ -7,7 +7,7 @@ const BusinessTransactions = () => {
   const [userDetails, setUserDetails] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [, setError] = useState("");
+  const [error, setError] = useState("");
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [currentProduct, setCurrentProduct] = useState(null);
   const [currentTransactionId, setCurrentTransactionId] = useState(null);
@@ -164,8 +164,8 @@ const BusinessTransactions = () => {
         <br />
         <div className="text-center mt-5 text-muted">No transactions available for this farmer.</div>
       </div>
-    );
-  }
+  );
+}
 
   const groupedTransactions = groupTransactionsByDate(transactions);
 
