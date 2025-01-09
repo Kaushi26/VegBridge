@@ -23,7 +23,7 @@ const Cart = () => {
               cart.map((item, index) => (
                 <div className="d-flex align-items-center mb-3" key={index}>
                   <img
-                    src={item.image ? item.image : 'https://via.placeholder.com/150'}
+                    src={item.image ? item.image : 'Cart https://via.placeholder.com/150'}
                     alt="Item"
                     width="100"
                     height="100"
