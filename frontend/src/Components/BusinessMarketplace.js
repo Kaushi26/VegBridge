@@ -160,7 +160,7 @@ const BusinessMarketplace = () => {
           onClick={handleOpenNotificationsModal}
           title="View Notifications"
         >
-          <i className="fa fa-bell"></i> ({unreadNotifications}) {/* Display only unread notifications count */}
+          <i className="fa fa-bell"></i> Notifications ({unreadNotifications}) {/* Display only unread notifications count */}
         </button>
       </div>
 
@@ -174,7 +174,7 @@ const BusinessMarketplace = () => {
         }}
       >
         <Link to="/add-to-cart" className="btn btn-success btn-lg" title="View Cart">
-          <i className="fa fa-shopping-cart"></i>({cart.length})
+          <i className="fa fa-shopping-cart"></i> Cart ({cart.length})
         </Link>
       </div>
 
