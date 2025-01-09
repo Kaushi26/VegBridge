@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-
 const RegisterForm = () => {
   const [role, setRole] = useState('');
   const [formData, setFormData] = useState({
@@ -75,23 +74,20 @@ const RegisterForm = () => {
     if (validateForm()) {
       setLoading(true);
       try {
-        const response = await axios.post(`${apiURL}/api/register`, {
+        await axios.post(`${apiURL}/api/register`, {
           ...formData,
           role,
           sortingQuality,
         }, {
           headers: { 'Content-Type': 'application/json' },
         });
-        const data = await response.json();
-        if (data.errors) {
-          setErrors(data.errors);
-        } else {
-          console.log('Registration successful');
-          navigate('/login');
-          setFormData({ name: '', address: '', city: '', dob: '', email: '', password: '', confirmPassword: '' });
-        }
+        // Show success message
+        alert('Your registration is successful!');
+        // Redirect to login page
+        navigate('/login');
       } catch (error) {
         console.error('Error:', error);
+        alert('Something went wrong. Please try again later.');
       } finally {
         setLoading(false);
       }
@@ -233,7 +229,7 @@ const RegisterForm = () => {
                   {role === 'business' && (
                     <div className="mb-3">
                       <h6 className="mb-2 fw-bold">Sorting Quality:</h6>
-                      {['Underripe', 'Ripe', 'Overripe', 'About to spoil'].map((quality) => (
+                      {['underripe', 'ripe', 'overripe', 'spoil'].map((quality) => (
                         <div className="form-check" key={quality}>
                           <input
                             className="form-check-input"
