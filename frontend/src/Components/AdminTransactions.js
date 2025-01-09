@@ -6,7 +6,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 const AdminTransactions = () => {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [, setError] = useState("");
+  const [error, setError] = useState("");
   const apiURL = process.env.REACT_APP_API_NAME;
 
   // Fetch transactions
@@ -54,15 +54,8 @@ const AdminTransactions = () => {
     );
   }
 
-  // Handle empty transactions
-  if (transactions.length === 0) {
-    return (
-      <div className="container mt-5">
-        <br />
-        <br />
-        <div className="text-center mt-5 text-muted">No transactions available for this farmer.</div>
-      </div>
-    );
+  if (error) {
+    return <div className="text-center mt-5 text-danger">{error}</div>;
   }
 
   const groupedTransactions = groupTransactionsByDate(transactions);
