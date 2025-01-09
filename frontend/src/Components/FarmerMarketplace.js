@@ -126,19 +126,20 @@ const FarmerMarketplace = () => {
         className="position-fixed m-3"
         style={{
           right: 0,
-          top: "20%",
+          top: "15%",
           transform: "translateY(-50%)",
           zIndex: 1000,
         }}
       >
         <Link to="/add-listing" className="btn btn-success btn-lg">
-          <i className="fa fa-plus-circle"></i> Add <br/>Listing
+          <i className="fa fa-plus-circle"></i> Add Listing
         </Link>
       </div>
 
       <div className="mb-4">
+        <h5></h5>
         <h4>Filter by Quality:</h4>
-        <div className="btn-group">
+        <div className="btn-group">   
           {["", "Underripe", "Ripe", "Overripe", "About to spoil"].map(
             (grade) => (
               <button
