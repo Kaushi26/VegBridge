@@ -65,16 +65,15 @@ const Navbar2 = ({ setIsLoggedIn }) => {
     };
 
     return (
-        <section className="fixed-top w-100 mb-5" style={{ marginBottom: '100px' }}>
+        <section className="fixed-top w-100">
             <nav className="navbar navbar-expand-lg navbar-light bg-light py-2">
-                <div className="container d-flex align-items-center">
-                    {/* Logout Button */}
-                    <button className="btn btn-danger ms-3 me-3" onClick={handleLogout}>
-                        Logout
-                    </button>
-
+                <div className="container-fluid">
                     {/* Back Button */}
-                    <button onClick={handleBackButtonClick} className="btn btn-outline-secondary me-3">
+                    <button
+                        className="btn btn-success me-3 px-4 py-2"
+                        style={{ fontSize: '1.2rem' }}
+                        onClick={handleBackButtonClick}
+                    >
                         &#8592; Back
                     </button>
 
@@ -84,7 +83,7 @@ const Navbar2 = ({ setIsLoggedIn }) => {
                             src={logo}
                             alt="Vegbridge logo"
                             className="d-inline-block align-text-top"
-                            style={{ height: '80px' }}
+                            style={{ height: '60px' }}
                         />
                     </Link>
 
@@ -97,102 +96,65 @@ const Navbar2 = ({ setIsLoggedIn }) => {
                         aria-controls="navbarNav"
                         aria-expanded="false"
                         aria-label="Toggle navigation"
+                        style={{ backgroundColor: 'transparent', border: '1px solid #ddd', marginBottom: '15px' }}
                     >
                         <span className="navbar-toggler-icon"></span>
                     </button>
 
                     {/* Navbar Links */}
                     <div className="collapse navbar-collapse" id="navbarNav">
-                        <div className="d-flex ms-auto">
-                            {/* Admin Role Components */}
+                        <div className="navbar-nav ms-auto text-center">
+                            {/* Role-based Links */}
                             {userRole === "admin" && (
                                 <>
-                                    <Link
-                                        className="nav-link fw-bold text-white bg-success px-3 py-2 rounded"
-                                        to="/admin-marketplace"
-                                        style={{ marginRight: '15px' }}
-                                    >
+                                    <Link className="btn btn-success mx-1 my-2 w-100" to="/admin-marketplace">
                                         Marketplace
                                     </Link>
-                                    <Link
-                                        className="nav-link fw-bold text-white bg-success px-3 py-2 rounded"
-                                        to="/admin-transactions"
-                                        style={{ marginRight: '15px' }}
-                                    >
+                                    <Link className="btn btn-success mx-1 my-2 w-100" to="/admin-transactions">
                                         Transaction History
                                     </Link>
-                                    <Link
-                                        className="nav-link fw-bold text-white bg-success px-3 py-2 rounded"
-                                        to="/admin-guides"
-                                        style={{ marginRight: '15px' }}
-                                    >
+                                    <Link className="btn btn-success mx-1 my-2 w-100" to="/admin-guides">
                                         Guides
                                     </Link>
                                 </>
                             )}
 
-                            {/* Farmer Role Components */}
                             {userRole === "farmer" && (
                                 <>
-                                    <Link
-                                        className="nav-link fw-bold text-white bg-success px-3 py-2 rounded"
-                                        to="/farmer-marketplace"
-                                        style={{ marginRight: '15px' }}
-                                    >
+                                    <Link className="btn btn-success mx-1 my-2 w-100" to="/farmer-marketplace">
                                         Marketplace
                                     </Link>
-                                    <Link
-                                        className="nav-link fw-bold text-white bg-success px-3 py-2 rounded"
-                                        to="/stock-dashboard"
-                                        style={{ marginRight: '15px' }}
-                                    >
+                                    <Link className="btn btn-success mx-1 my-2 w-100" to="/stock-dashboard">
                                         Stock Dashboard
                                     </Link>
-                                    <Link
-                                        className="nav-link fw-bold text-white bg-success px-3 py-2 rounded"
-                                        to="/farmer-transactions"
-                                        style={{ marginRight: '15px' }}
-                                    >
+                                    <Link className="btn btn-success mx-1 my-2 w-100" to="/farmer-transactions">
                                         Transaction History
                                     </Link>
-                                    <Link
-                                        className="nav-link fw-bold text-white bg-success px-3 py-2 rounded"
-                                        to="/farmer-guides"
-                                        style={{ marginRight: '15px' }}
-                                    >
+                                    <Link className="btn btn-success mx-1 my-2 w-100" to="/farmer-guides">
                                         Guides
                                     </Link>
                                 </>
                             )}
 
-                            {/* Business Role Components */}
                             {userRole === "business" && (
                                 <>
-                                    <Link
-                                        className="nav-link fw-bold text-white bg-success px-3 py-2 rounded"
-                                        to="/business-marketplace"
-                                        style={{ marginRight: '15px' }}
-                                    >
+                                    <Link className="btn btn-success mx-1 my-2 w-100" to="/business-marketplace">
                                         Marketplace
                                     </Link>
-                                    <Link
-                                        className="nav-link fw-bold text-white bg-success px-3 py-2 rounded"
-                                        to="/business-transactions"
-                                        style={{ marginRight: '15px' }}
-                                    >
+                                    <Link className="btn btn-success mx-1 my-2 w-100" to="/business-transactions">
                                         Transaction History
                                     </Link>
                                 </>
                             )}
 
-                            {/* Common Components */}
-                            <Link
-                                className="nav-link fw-bold text-white bg-success px-3 py-2 rounded"
-                                to="/order-tracking"
-                                style={{ marginRight: '15px' }}
+                            {/* Logout Button */}
+                            <button
+                                className="btn btn-danger mx-1 my-2 w-100"
+                                style={{ marginLeft: 'auto' }}
+                                onClick={handleLogout}
                             >
-                                Order Status & Tracking
-                            </Link>
+                                Logout
+                            </button>
                         </div>
                     </div>
                 </div>
