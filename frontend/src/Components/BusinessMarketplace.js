@@ -144,57 +144,83 @@ const BusinessMarketplace = () => {
     setIsNotificationsModalOpen(false);
   };
   return (
-    <div className="container mt-5">
+<div className="container mt-5">
+<div
+    style={{
+      width: "100%",
+      textAlign: "center",
+      padding: "75px 0 0", // Adjust padding to apply only to the top
+    }}
+  >
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        flexWrap: "wrap",
+        gap: "16px", // Space between the buttons
+      }}
+    >
       {/* Notification Icon */}
-      <div
-        className="position-fixed m-3"
+      <button
+        onClick={handleOpenNotificationsModal}
+        className="btn btn-success btn-lg"
+        title="View Notifications"
         style={{
-          left: 0,
-          top: "20%",
-          transform: "translateY(-50%)",
-          zIndex: 1000,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          padding: "8px 16px",
+          fontSize: "16px",
+          borderRadius: "8px",
+          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+          maxWidth: "240px",
+          width: "100%",
+          transition: "transform 0.3s ease, box-shadow 0.3s ease",
         }}
       >
+        <i className="fa fa-bell" style={{ fontSize: "22px", marginRight: "8px" }}></i>
+        Notifications ({unreadNotifications})
+      </button>
+
+      {/* Add to Cart */}
+      <Link
+        to="/add-to-cart"
+        className="btn btn-success btn-lg"
+        title="View Cart"
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          padding: "8px 16px",
+          fontSize: "16px",
+          borderRadius: "8px",
+          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+          maxWidth: "240px",
+          width: "100%",
+          transition: "transform 0.3s ease, box-shadow 0.3s ease",
+        }}
+      >
+        <i className="fa fa-shopping-cart" style={{ fontSize: "22px", marginRight: "8px" }}></i>
+        Cart ({cart.length})
+      </Link>
+    </div>
+  </div>
+
+  <div className="mb-4" style={{ marginTop: "16px" }}> {/* Adjust spacing between sections */}
+    <h4>Filter by Quality:</h4>
+    <div className="btn-group">
+      {["", "Underripe", "Ripe", "Overripe", "About to spoil"].map((quality) => (
         <button
-          className="btn btn-success btn-lg"
-          onClick={handleOpenNotificationsModal}
-          title="View Notifications"
+          key={quality}
+          className={`btn btn-success ${qualityFilter === quality ? "active" : ""}`}
+          onClick={() => setQualityFilter(quality)}
         >
-          <i className="fa fa-bell"></i> Notifications ({unreadNotifications}) {/* Display only unread notifications count */}
+          {quality || "All"}
         </button>
-      </div>
-
-      <div
-        className="position-fixed m-3"
-        style={{
-          right: 0,
-          top: "20%",
-          transform: "translateY(-50%)",
-          zIndex: 1000,
-        }}
-      >
-        <Link to="/add-to-cart" className="btn btn-success btn-lg" title="View Cart">
-          <i className="fa fa-shopping-cart"></i> Cart ({cart.length})
-        </Link>
-      </div>
-
-      <div className="mb-4">
-        <br/>
-        <br/>
-        <br/>
-        <h4>Filter by Quality:</h4>
-        <div className="btn-group">
-          {["", "Underripe", "Ripe", "Overripe", "About to spoil"].map((quality) => (
-            <button
-              key={quality}
-              className={`btn btn-success ${qualityFilter === quality ? "active" : ""}`}
-              onClick={() => setQualityFilter(quality)}
-            >
-              {quality || "All"}
-            </button>
-          ))}
-        </div>
-      </div>
+      ))}
+    </div>
+  </div>
 
       <div className="row">
         {filteredProducts.map((product) => {
