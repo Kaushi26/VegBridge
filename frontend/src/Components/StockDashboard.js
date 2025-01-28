@@ -82,10 +82,10 @@ const FarmerStockDashboard = () => {
 
   // Colors using green shades
   const greenShades = [
-    '#A5D6A7', // Underripe - light green
+    '#FFEB3B', // Underripe - light green
     '#81C784', // Ripe - medium green
-    '#4CAF50', // Overripe - darker green
-    '#388E3C', // About to spoil - very dark green
+    '##FF7043', // Overripe - darker green
+    '#D32F2F', // About to spoil - very dark green
   ];
 
   const chartData = {
