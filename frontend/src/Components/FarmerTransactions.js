@@ -7,7 +7,7 @@ const FarmerTransactions = () => {
   const [userDetails, setUserDetails] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [, setError] = useState("");
   const apiURL = process.env.REACT_APP_API_NAME;
 
   // Fetch user data from localStorage
@@ -104,7 +104,7 @@ const FarmerTransactions = () => {
                 <h5>
                   <strong>Net Total:</strong> LKR {transaction.totalPrice}
                 </h5>
-                <Table striped bordered hover className="mt-3">
+                <Table striped bordered hover responsive="sm" className="mt-3">
                   <thead>
                     <tr>
                       <th className="text-center align-middle" style={{ width: "15%" }}>
@@ -149,7 +149,11 @@ const FarmerTransactions = () => {
                             <img
                               src={product.image}
                               alt={product.name}
-                              style={{ width: "120px", height: "100px", objectFit: "cover" }}
+                              style={{
+                                width: "120px",
+                                height: "100px",
+                                objectFit: "cover",
+                              }}
                             />
                           </td>
                           <td>
@@ -201,6 +205,7 @@ const FarmerTransactions = () => {
       )}
     </Container>
   );
+  
 };
 
 export default FarmerTransactions;
