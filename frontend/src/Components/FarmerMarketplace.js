@@ -122,22 +122,32 @@ const FarmerMarketplace = () => {
 
   return (
     <div className="container mt-5 pt-5">
-      <div
-        className="position-fixed m-3"
-        style={{
-          right: 0,
-          top: "15%",
-          transform: "translateY(-50%)",
-          zIndex: 1000,
-        }}
-      >
-        <Link to="/add-listing" className="btn btn-success btn-lg">
-          <i className="fa fa-plus-circle"></i> Add Listing
+      <div className="my-3" style={{ width: "100%", textAlign: "center" }}>
+        <Link 
+          to="/add-listing" 
+          className="btn btn-success btn-lg" 
+          aria-label="Add a new listing" 
+          style={{
+            display: "flex", 
+            justifyContent: "center", 
+            alignItems: "center",
+            padding: "8px 16px",
+            fontSize: "16px",
+            borderRadius: "8px",
+            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+            maxWidth: "500px", // Limit button width
+            width: "auto", // Ensures the width adjusts based on the content
+            transition: "transform 0.3s ease, box-shadow 0.3s ease",
+            marginLeft: "auto", 
+            marginRight: "auto", // Center horizontally using auto margins
+          }}
+        >
+          <i className="fa fa-plus-circle" style={{ fontSize: "22px", marginBottom: "6px" }}> Add Listing</i>
         </Link>
       </div>
 
       <div className="mb-4">
-        <h5></h5>
+        <h5> </h5>
         <h4>Filter by Quality:</h4>
         <div className="btn-group">   
           {["", "Underripe", "Ripe", "Overripe", "About to spoil"].map(
