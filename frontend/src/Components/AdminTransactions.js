@@ -60,13 +60,13 @@ const AdminTransactions = () => {
 
   const groupedTransactions = groupTransactionsByDate(transactions);
 
-  const handlePayNow = async (orderId, farmerName, farmerEmail, totalAmount) => {
+  const handlePayNow = async (orderId, farmerName, farmerEmail, totalAmount, farmerIndex) => {
     console.log("Initiating payment process for:", { orderId, farmerName, farmerEmail, totalAmount });
 
     try {
       const token = localStorage.getItem("token");
       console.log("Using token for authentication:", token);
-  
+
       const response = await axios.post(
         `${apiURL}/api/orders/send-link`,
         { orderId, farmerName, farmerEmail, totalAmount },
@@ -76,6 +76,20 @@ const AdminTransactions = () => {
           },
         }
       );
+
+      // Update the payout status for the farmer that was paid
+      const updatedTransactions = [...transactions];
+      updatedTransactions.forEach((transaction, tIndex) => {
+        if (tIndex === farmerIndex) {
+          transaction.farmers.forEach((farmer, fIndex) => {
+            if (fIndex === farmerIndex) {
+              farmer.payoutStatus = "Link Sent";
+            }
+          });
+        }
+      });
+
+      setTransactions(updatedTransactions);
       alert(response.data.message);
     } catch (error) {
       console.error("Error during Pay Now operation:", error.response || error.message);
@@ -154,8 +168,11 @@ const AdminTransactions = () => {
                   <tbody>
                     {transaction.farmers.map((farmer, fIdx) => {
                       const products = farmer.products;
-                      const totalAmountForFarmer = products.reduce((sum, product) => sum + product.price * product.quantity, 0);
-  
+                      const totalAmountForFarmer = products.reduce(
+                        (sum, product) => sum + product.price * product.quantity,
+                        0
+                      );
+
                       return products.map((product, pIdx) => (
                         <tr key={`${tidx}-${fIdx}-${pIdx}`}>
                           {fIdx === 0 && pIdx === 0 && (
@@ -170,7 +187,7 @@ const AdminTransactions = () => {
                               <br />
                               <strong>Email:</strong> {transaction.buyerDetails.email}
                               <br />
-                              <strong>Address:</strong> {transaction.buyerDetails.address},{" "}
+                              <strong>Address:</strong> {transaction.buyerDetails.address},
                               {transaction.buyerDetails.location}
                             </td>
                           )}
@@ -180,7 +197,7 @@ const AdminTransactions = () => {
                               <br />
                               <strong>Email:</strong> {farmer.farmerDetails.farmerEmail}
                               <br />
-                              <strong>Address:</strong> {farmer.farmerDetails.farmerAddress},{" "}
+                              <strong>Address:</strong> {farmer.farmerDetails.farmerAddress},
                               {farmer.farmerDetails.location}
                             </td>
                           )}
@@ -227,12 +244,13 @@ const AdminTransactions = () => {
                                     transaction._id,
                                     farmer.farmerDetails.farmerName,
                                     farmer.farmerDetails.farmerEmail,
-                                    totalAmountForFarmer
+                                    totalAmountForFarmer,
+                                    fIdx // pass farmer index to update individual farmer's status
                                   )
                                 }
-                                disabled={transaction.payoutStatus === "Paid"}
+                                disabled={farmer.payoutStatus === "Link Sent"}
                               >
-                                {transaction.payoutStatus === "Paid" ? "Link Sent" : "Pay Now"}
+                                {farmer.payoutStatus === "Link Sent" ? "Link Sent" : "Pay Now"}
                               </Button>
                             </td>
                           )}
@@ -248,7 +266,6 @@ const AdminTransactions = () => {
       ))}
     </Container>
   );
-  
 };
 
 export default AdminTransactions;
