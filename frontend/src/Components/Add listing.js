@@ -192,22 +192,49 @@ const AddListing = () => {
             required
           />
         </div>
+
         <div className="col-md-6">
           <label className="form-label">Quality</label>
-          <select
-            name="grade"
-            className="form-control"
-            value={formData.grade}
-            onChange={handleChange}
-            required
-          >
-            <option value="">Select Quality</option>
-            <option value="Ripe">Ripe</option>
-            <option value="Underripe">Underripe</option>
-            <option value="Overripe">Overripe</option>
-            <option value="About to spoil">About to spoil</option>
-          </select>
+          <div className="dropdown">
+            <button
+              className=" dropdown-toggle w-100"  // Green success button
+              type="button"
+              id="dropdownMenuButton"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              {formData.grade || "Select Quality"}
+            </button>
+            <ul className="dropdown-menu w-100" aria-labelledby="dropdownMenuButton">
+              <li
+                className="dropdown-item"
+                onClick={() => handleChange({ target: { name: "grade", value: "Ripe" } })}
+              >
+                <strong>Ripe</strong>: <span className="text-muted">Fresh and ready to be consumed</span>
+              </li>
+              <li
+                className="dropdown-item"
+                onClick={() => handleChange({ target: { name: "grade", value: "Underripe" } })}
+              >
+                <strong>Underripe</strong>: <span className="text-muted">Not fully matured but still usable</span>
+              </li>
+              <li
+                className="dropdown-item"
+                onClick={() => handleChange({ target: { name: "grade", value: "Overripe" } })}
+              >
+                <strong>Overripe</strong>: <span className="text-muted">Past its peak freshness</span>
+              </li>
+              <li
+                className="dropdown-item"
+                onClick={() => handleChange({ target: { name: "grade", value: "About to spoil" } })}
+              >
+                <strong>About to Spoil</strong>: <span className="text-muted">Nearing spoilage, may have some damage</span>
+              </li>
+            </ul>
+          </div>
         </div>
+
+
         <div className="col-md-6">
           <label className="form-label">Price per kg</label>
           <input
